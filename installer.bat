@@ -63,7 +63,7 @@ set "st_startIn=%~dp0"
 set "st_comment=SillyTavern"
 
 REM Check if the script is being run from a cloud storage folder (OneDrive, Google Drive, or Dropbox)
-echo "%CD%" | findstr /I "OneDrive" > nul
+echo "%CD%" | findstr /I "\\OneDrive\\" > nul
 if %errorlevel% equ 0 (
     echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] Installation in OneDrive folders is not supported!%reset%
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO] Installing the SillyTavern Launcher and SillyTavern in OneDrive can cause issues with dependency installs.
@@ -72,8 +72,7 @@ if %errorlevel% equ 0 (
     pause
     exit /b 1
 )
-
-echo "%CD%" | findstr /I "Google Drive" > nul
+echo "%CD%" | findstr /I "\\Google[ ]Drive\\" > nul
 if %errorlevel% equ 0 (
     echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] Installation in Google Drive folders is not supported!%reset%
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO] Installing the SillyTavern Launcher and SillyTavern in Google Drive can cause issues with dependency installs.
@@ -82,12 +81,11 @@ if %errorlevel% equ 0 (
     pause
     exit /b 1
 )
-
-echo "%CD%" | findstr /I "Dropbox" > nul
+echo "%CD%" | findstr /I "\\Dropbox\\" > nul
 if %errorlevel% equ 0 (
     echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] Installation in Dropbox folders is not supported!%reset%
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO] Installing the SillyTavern Launcher and SillyTavern in Dropbox can cause issues with dependency installs.
-    echo Not to mention it's bad for privacy and speed because of cloud syncing..%reset%
+    echo Not to mention it's bad for privacy and speed because of cloud syncing.%reset%
     echo Please move the installer to a different directory and try again.
     pause
     exit /b 1
@@ -247,10 +245,21 @@ if %errorlevel% neq 0 (
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Installing Miniconda3...
     start /wait %bin_dir%\Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S
 
+    REM Activate the Miniconda installation
+    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Activating Miniconda environment...
+    call "%miniconda_path%\Scripts\activate.bat"
 
+    REM Accept the Anaconda Terms of Service for all main channels
+    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Accepting Anaconda Terms of Service...
+    call conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+    call conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+    call conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/msys2
+
+    REM Clean up the installer
+    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Cleaning up Miniconda3 installer...
     del %bin_dir%\Miniconda3-latest-Windows-x86_64.exe
-    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% %green_fg_strong%Miniconda3 installed successfully.%reset%
 
+    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% %green_fg_strong%Miniconda3 installed successfully.%reset%
 ) else (
     echo [ %green_fg_strong%OK%reset% ] Found app command: %cyan_fg_strong%conda%reset% from app: Miniconda3
 )
