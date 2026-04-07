@@ -47,8 +47,11 @@ REM Explicitly clear PYTHONHOME/PYTHONPATH just in case
 set "PYTHONHOME="
 set "PYTHONPATH="
 
-REM Optional: Hint to downstream scripts to skip any Conda flows they may support
+REM Hint to downstream scripts to skip any Conda flows they may support
 set "STL_NO_CONDA=1"
+
+REM Tell sub-scripts which launcher to restart into
+set "STL_LAUNCHER=Launcher_pyenv.bat"
 
 REM Create a tiny shim to neutralize accidental 'conda' invocations
 set "STL_SHIM=%SCRIPT_DIR%\.shim"
@@ -65,8 +68,6 @@ where python
 python --version
 
 REM === END PYENV + VENV MODE ====================================================
-
-
 @echo off
 chcp 437 > nul
 REM SillyTavern Installer
@@ -115,8 +116,8 @@ set "miniconda_path_usrbin=%userprofile%\miniconda3\Library\usr\bin"
 set "miniconda_path_bin=%userprofile%\miniconda3\Library\bin"
 set "miniconda_path_scripts=%userprofile%\miniconda3\Scripts"
 
-REM Define the paths and filenames for the shortcut creation (launcher.bat)
-set "stl_shortcutTarget=%~dp0launcher.bat"
+REM Define the paths and filenames for the shortcut creation (Launcher_pyenv.bat)
+set "stl_shortcutTarget=%~dp0Launcher_pyenv.bat"
 set "stl_iconFile=%~dp0st-launcher.ico"
 set "stl_desktopPath=%userprofile%\Desktop"
 set "stl_shortcutName=ST-Launcher.lnk"
@@ -132,7 +133,7 @@ set "st_startIn=%~dp0"
 set "st_comment=SillyTavern"
 
 REM Check if the script is being run from a cloud storage folder (OneDrive, Google Drive, or Dropbox)
-echo "%CD%" | findstr /I "OneDrive" > nul
+echo "%CD%" | findstr /I "\\OneDrive\\" > nul
 if %errorlevel% equ 0 (
     echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] Installation in OneDrive folders is not supported!%reset%
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO] Installing the SillyTavern Launcher and SillyTavern in OneDrive can cause issues with dependency installs.
@@ -141,8 +142,7 @@ if %errorlevel% equ 0 (
     pause
     exit /b 1
 )
-
-echo "%CD%" | findstr /I "Google Drive" > nul
+echo "%CD%" | findstr /I "\\Google[ ]Drive\\" > nul
 if %errorlevel% equ 0 (
     echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] Installation in Google Drive folders is not supported!%reset%
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO] Installing the SillyTavern Launcher and SillyTavern in Google Drive can cause issues with dependency installs.
@@ -151,12 +151,11 @@ if %errorlevel% equ 0 (
     pause
     exit /b 1
 )
-
-echo "%CD%" | findstr /I "Dropbox" > nul
+echo "%CD%" | findstr /I "\\Dropbox\\" > nul
 if %errorlevel% equ 0 (
     echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] Installation in Dropbox folders is not supported!%reset%
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO] Installing the SillyTavern Launcher and SillyTavern in Dropbox can cause issues with dependency installs.
-    echo Not to mention it's bad for privacy and speed because of cloud syncing..%reset%
+    echo Not to mention it's bad for privacy and speed because of cloud syncing.%reset%
     echo Please move the installer to a different directory and try again.
     pause
     exit /b 1
@@ -304,56 +303,10 @@ REM    )
 
 
 
-REM Check if Miniconda3 is installed; if not, then install Miniconda3 with fallback of PowerShell
-call conda --version > nul 2>&1
-if %errorlevel% neq 0 (
-    echo %yellow_bg%[%time%]%reset% %yellow_fg_strong%[WARN] Miniconda3 is not installed on this system.%reset%
-    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Installing Miniconda3 using PowerShell...
-
-    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Downloading Miniconda3...
-    curl -L -o "%bin_dir%\Miniconda3-latest-Windows-x86_64.exe" https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-
-    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Installing Miniconda3...
-    start /wait %bin_dir%\Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S
-
-
-    del %bin_dir%\Miniconda3-latest-Windows-x86_64.exe
-    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% %green_fg_strong%Miniconda3 installed successfully.%reset%
-
-) else (
-    echo [ %green_fg_strong%OK%reset% ] Found app command: %cyan_fg_strong%conda%reset% from app: Miniconda3
-)
-
-REM Get the current PATH value from the registry
-for /f "tokens=2*" %%A in ('reg query "HKCU\Environment" /v PATH') do set "current_path=%%B"
-
-REM Check if the paths are in the current PATH
-echo %current_path% | find /i "%miniconda_path%" > nul
-set "ff_path_exists=%errorlevel%"
-
+REM [PYENV MODE] Skipping Miniconda3 installation - using pyenv-win Python instead
+echo [ %green_fg_strong%OK%reset% ] [PYENV MODE] Using pyenv-win Python - Miniconda3 not required.
 
 setlocal enabledelayedexpansion
-
-REM Append the new paths to the current PATH only if they don't exist
-if %ff_path_exists% neq 0 (
-    set "new_path=%current_path%;%miniconda_path%;%miniconda_path_mingw%;%miniconda_path_usrbin%;%miniconda_path_bin%;%miniconda_path_scripts%"
-    echo.
-    echo [DEBUG] "current_path is:%cyan_fg_strong% %current_path%%reset%"
-    echo.
-    echo [DEBUG] "miniconda_path is:%cyan_fg_strong% %miniconda_path%%reset%"
-    echo.
-    echo [DEBUG] "new_path is:%cyan_fg_strong% !new_path!%reset%"
-
-    REM Update the PATH value in the registry
-    reg add "HKCU\Environment" /v PATH /t REG_EXPAND_SZ /d "!new_path!" /f
-
-    REM Update the PATH value for the current session
-    setx PATH "!new_path!" > nul
-    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% %green_fg_strong%miniconda3 added to PATH.%reset%
-) else (
-    set "new_path=%current_path%"
-    echo [ %green_fg_strong%OK%reset% ] Found PATH: miniconda3%reset%
-)
 
 REM Check if Python App Execution Aliases exist
 if exist "%LOCALAPPDATA%\Microsoft\WindowsApps\python.exe" (
@@ -473,7 +426,7 @@ if /i "%start_launcher%"=="Y" (
     REM Run the launcher
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running launcher in a new window...
     cd /d "%~dp0"
-    start cmd /k launcher.bat
+    start cmd /k Launcher_pyenv.bat
     exit
 )
 goto :installer
@@ -673,7 +626,7 @@ if /i "%start_launcher%"=="Y" (
     REM Run the launcher
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running launcher in a new window...
     cd /d "%~dp0"
-    start cmd /k launcher.bat
+    start cmd /k Launcher_pyenv.bat
     exit
 )
 goto :installer
@@ -1109,7 +1062,7 @@ if /i "%start_launcher%"=="Y" (
     REM Run the launcher
     echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running launcher in a new window...
     cd /d "%~dp0"
-    start cmd /k launcher.bat
+    start cmd /k Launcher_pyenv.bat
     exit
 )
 goto :installer

@@ -18,9 +18,10 @@ REM If CUDA Toolkit fails to install then copy all files from MSBuildExtensions 
 REM xcopy /s /i /y "%ProgramFiles%\NVIDIA GPU Computing Toolkit\CUDA\v12.5.1\extras\visual_studio_integration\MSBuildExtensions\*" "%ProgramFiles%\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\BuildCustomizations"
 
 pause
+if not defined STL_LAUNCHER set "STL_LAUNCHER=Launcher.bat"
 REM Prompt user to restart
 echo Restarting launcher...
 timeout /t 5
 cd /d %stl_root%
-start %stl_root%Launcher.bat
+start %stl_root%%STL_LAUNCHER%
 exit

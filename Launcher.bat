@@ -198,6 +198,33 @@ if exist "%ooba_modules_path%" (
     )
 )
 
+REM Define variables to track module status (TEXT GENERATION WEBUI 3.13)
+set "tgwebui3_modules_path=%~dp0bin\settings\modules-tgwebui3.txt"
+set "tgwebui3_autolaunch_trigger=false"
+set "tgwebui3_extopenai_trigger=false"
+set "tgwebui3_listen_trigger=false"
+set "tgwebui3_listenport_trigger=false"
+set "tgwebui3_apiport_trigger=false"
+set "tgwebui3_verbose_trigger=false"
+if exist "%tgwebui3_modules_path%" (
+    for /f "tokens=1,* delims==" %%A in ('type "%tgwebui3_modules_path%"') do (
+        set "%%A=%%B"
+    )
+)
+
+REM Define variables to track module status (KOBOLDCPP)
+set "koboldcpp_modules_path=%~dp0bin\settings\modules-koboldcpp.txt"
+set "koboldcpp_skiplauncher_trigger=false"
+set "koboldcpp_launch_trigger=false"
+set "koboldcpp_port_trigger=false"
+set "koboldcpp_port=5001"
+set "koboldcpp_host_trigger=false"
+if exist "%koboldcpp_modules_path%" (
+    for /f "tokens=1,* delims==" %%A in ('type "%koboldcpp_modules_path%"') do (
+        set "%%A=%%B"
+    )
+)
+
 REM Define variables to track module status (TABBYAPI)
 set "tabbyapi_modules_path=%~dp0bin\settings\modules-tabbyapi.txt"
 set "tabbyapi_selectedmodelname_trigger=false"
@@ -244,6 +271,7 @@ set "ostrisaitoolkit_install_path=%image_generation_dir%\ai-toolkit"
 REM Define variables for install locations (Text Completion)
 set "text_completion_dir=%~dp0text-completion"
 set "ooba_install_path=%text_completion_dir%\text-generation-webui"
+set "tgwebui3_install_path=%text_completion_dir%\text-generation-webui-3.13"
 set "koboldcpp_install_path=%text_completion_dir%\dev-koboldcpp"
 set "llamacpp_install_path=%text_completion_dir%\dev-llamacpp"
 set "tabbyapi_install_path=%text_completion_dir%\tabbyAPI"
@@ -452,10 +480,28 @@ for /f "tokens=*" %%a in (%ooba_modules_path%) do set "%%a"
 REM Create modules-tabbyapi if it doesn't exist
 if not exist %tabbyapi_modules_path% (
     type nul > %tabbyapi_modules_path%
-    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Created text file: "modules-tabbyapi.txt"  
+    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Created text file: "modules-tabbyapi.txt"
 )
 REM Load modules-tabbyapi flags from modules-tabbyapi
 for /f "tokens=*" %%a in (%tabbyapi_modules_path%) do set "%%a"
+
+
+REM Create modules-tgwebui3 if it doesn't exist
+if not exist %tgwebui3_modules_path% (
+    type nul > %tgwebui3_modules_path%
+    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Created text file: "modules-tgwebui3.txt"
+)
+REM Load modules-tgwebui3 flags from modules-tgwebui3
+for /f "tokens=*" %%a in (%tgwebui3_modules_path%) do set "%%a"
+
+
+REM Create modules-koboldcpp if it doesn't exist
+if not exist %koboldcpp_modules_path% (
+    type nul > %koboldcpp_modules_path%
+    echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Created text file: "modules-koboldcpp.txt"
+)
+REM Load modules-koboldcpp flags from modules-koboldcpp
+for /f "tokens=*" %%a in (%koboldcpp_modules_path%) do set "%%a"
 
 
 REM Get the current PATH value from the registry
@@ -634,6 +680,7 @@ echo    5. Update Manager
 echo    6. Toolbox
 echo    7. Troubleshooting ^& Support
 echo    8. More info about LLM models your GPU can run.
+echo    9. Start SillyTavern + Text generation web UI 3.13
 echo %cyan_fg_strong% ______________________________________________________________%reset%
 echo %cyan_fg_strong%^| Menu Options:                                                ^|%reset%
 echo    0. Exit
@@ -787,6 +834,32 @@ if "%choice%"=="1" (
     ) else (
         echo [%DATE% %TIME%] ERROR: info_vram.bat not found in: %functions_dir%\Home >> %logs_stl_console_path%
         echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] info_vram.bat not found in: %functions_dir%\Home%reset%
+        echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running Automatic Repair...
+        git pull
+        pause
+        goto :home
+    )
+) else if "%choice%"=="9" (
+    REM Launch Text generation web UI 3.13 in a new window first
+    if exist "%tgwebui3_install_path%" (
+        set "tgwebui3_start_command="
+        for /F "tokens=*" %%a in ('findstr /I "tgwebui3_start_command=" "%tgwebui3_modules_path%"') do set "%%a"
+        if not defined tgwebui3_start_command set "tgwebui3_start_command=start start_windows.bat"
+        set "tgwebui3_start_command=!tgwebui3_start_command:tgwebui3_start_command=!"
+        echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Text generation web UI 3.13 launching in a new window...
+        cd /d "%tgwebui3_install_path%" && !tgwebui3_start_command!
+        cd /d "%st_install_path%"
+    ) else (
+        echo %red_bg%[%time%]%reset% %red_fg_strong%[WARN] text-generation-webui-3.13 not found, launching SillyTavern only.%reset%
+    )
+    REM Now launch SillyTavern
+    set "caller=home"
+    if exist "%app_launcher_core_utilities_dir%\start_st.bat" (
+        call %app_launcher_core_utilities_dir%\start_st.bat
+        goto :home
+    ) else (
+        echo [%DATE% %TIME%] ERROR: start_st.bat not found in: %app_launcher_core_utilities_dir% >> %logs_stl_console_path%
+        echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] start_st.bat not found in: %app_launcher_core_utilities_dir%%reset%
         echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running Automatic Repair...
         git pull
         pause
@@ -1703,6 +1776,7 @@ echo %cyan_fg_strong%^| What would you like to do?                              
 echo    1. Start Text generation web UI (oobabooga)
 echo    2. Start koboldcpp
 echo    3. Start TabbyAPI
+echo    4. Start Text generation web UI 3.13
 echo %cyan_fg_strong% ______________________________________________________________%reset%
 echo %cyan_fg_strong%^| Menu Options:                                                ^|%reset%
 echo    0. Back
@@ -1723,6 +1797,8 @@ if "%app_launcher_txt_comp_choice%"=="1" (
     call :start_koboldcpp
 ) else if "%app_launcher_txt_comp_choice%"=="3" (
     call :start_tabbyapi
+) else if "%app_launcher_txt_comp_choice%"=="4" (
+    call :start_tgwebui3
 ) else if "%app_launcher_txt_comp_choice%"=="0" (
     goto :app_launcher
 ) else (
@@ -1791,6 +1867,21 @@ goto :home
     ) else (
         echo [%DATE% %TIME%] ERROR: start_tabbyapi.bat not found in: %app_launcher_text_completion_dir% >> %logs_stl_console_path%
         echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] start_tabbyapi.bat not found in: %app_launcher_text_completion_dir%%reset%
+        echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running Automatic Repair...
+        git pull
+        pause
+        goto :home
+)
+
+
+:start_tgwebui3
+    set "caller=app_launcher_text_completion"
+    if exist "%app_launcher_text_completion_dir%\start_tgwebui3.bat" (
+        call %app_launcher_text_completion_dir%\start_tgwebui3.bat
+        goto :home
+    ) else (
+        echo [%DATE% %TIME%] ERROR: start_tgwebui3.bat not found in: %app_launcher_text_completion_dir% >> %logs_stl_console_path%
+        echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] start_tgwebui3.bat not found in: %app_launcher_text_completion_dir%%reset%
         echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running Automatic Repair...
         git pull
         pause
@@ -4846,6 +4937,7 @@ echo %cyan_fg_strong%^| What would you like to do?                              
 echo    1. Edit Text generation web UI oobabooga
 echo    2. Edit koboldcpp
 echo    3. Edit TabbyAPI
+echo    4. Edit Text generation web UI 3.13
 
 echo %cyan_fg_strong% ______________________________________________________________%reset%
 echo %cyan_fg_strong%^| Menu Options:                                                ^|%reset%
@@ -4901,6 +4993,19 @@ if "%editor_text_completion_choice%"=="1" (
     ) else (
         echo [%DATE% %TIME%] ERROR: edit_tabbyapi_modules.bat.bat not found in: %editor_text_completion_dir% >> %logs_stl_console_path%
         echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] edit_tabbyapi_modules.bat not found in: %editor_text_completion_dir%%reset%
+        echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running Automatic Repair...
+        git pull
+        pause
+        goto :editor_text_completion
+    )
+) else if "%editor_text_completion_choice%"=="4" (
+    set "caller=editor_text_completion"
+    if exist "%editor_text_completion_dir%\edit_tgwebui3_modules.bat" (
+        call %editor_text_completion_dir%\edit_tgwebui3_modules.bat
+        goto :editor_text_completion
+    ) else (
+        echo [%DATE% %TIME%] ERROR: edit_tgwebui3_modules.bat not found in: %editor_text_completion_dir% >> %logs_stl_console_path%
+        echo %red_bg%[%time%]%reset% %red_fg_strong%[ERROR] edit_tgwebui3_modules.bat not found in: %editor_text_completion_dir%%reset%
         echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Running Automatic Repair...
         git pull
         pause

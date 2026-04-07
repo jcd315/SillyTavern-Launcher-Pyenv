@@ -4,64 +4,47 @@
 
 <img height="160" src="st-launcher.ico">
 
-<h1 align="center">SillyTavern Launcher - (STL)</h1>
+<h1 align="center">SillyTavern Launcher - Pyenv Edition</h1>
 
 <p align="center">
-    English | <a href="README-zh-cn.md">中文</a> | <a href="README-zh-tw.md">繁體中文</a> | <a href="README-ja-jp.md">日本語</a> | <a href="README-ko-kr.md">한국어</a> | <a href="README-nl-nl.md">Nederlands</a> | <a href="README-fr-fr.md">Français</a> | <a href="README-vi-vn.md">Tiếng Việt</a> | <a href="README-pt-pt.md">Português</a> | <a href="README-es-es.md">Español</a>
-  
-[![GitHub Stars](https://img.shields.io/github/stars/SillyTavern/SillyTavern-Launcher.svg)](https://github.com/SillyTavern/SillyTavern-Launcher/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/SillyTavern/SillyTavern-Launcher.svg)](https://github.com/SillyTavern/SillyTavern-Launcher/network)
-[![GitHub Issues](https://img.shields.io/github/issues/SillyTavern/SillyTavern-Launcher.svg)](https://github.com/SillyTavern/SillyTavern-Launcher/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/SillyTavern/SillyTavern-Launcher.svg)](https://github.com/SillyTavern/SillyTavern-Launcher/pulls)
+    A fork of <a href="https://github.com/SillyTavern/SillyTavern-Launcher">SillyTavern Launcher</a> that replaces Conda with <strong>pyenv-win + venv</strong> for Python environment management.
+</p>
+
+[![GitHub Stars](https://img.shields.io/github/stars/jcd315/SillyTavern-Launcher-Pyenv.svg)](https://github.com/jcd315/SillyTavern-Launcher-Pyenv/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/jcd315/SillyTavern-Launcher-Pyenv.svg)](https://github.com/jcd315/SillyTavern-Launcher-Pyenv/network)
+[![GitHub Issues](https://img.shields.io/github/issues/jcd315/SillyTavern-Launcher-Pyenv.svg)](https://github.com/jcd315/SillyTavern-Launcher-Pyenv/issues)
 </div>
 
-# 🔧 Installation
-## 🪟 Windows
-1.  On your keyboard: press **`WINDOWS + R`** to open Run dialog box. Then, run the following command to install git:
+# Why this fork?
+
+The upstream STL uses **Conda** to manage Python environments. This fork replaces Conda entirely with **pyenv-win** and Python's built-in **venv** module, giving you:
+
+- **Lighter footprint** -- no Conda installation required
+- **Faster setup** -- pyenv-win downloads only the Python version you need
+- **Isolation** -- a dedicated `.stl-pyenv-3.12.10/` venv keeps dependencies separate
+- **Compatibility** -- all upstream STL features still work; a shim neutralizes accidental `conda` calls
+
+# 🔧 Prerequisites
+
+1. **Git** -- install via `winget install -e --id Git.Git` or from [git-scm.com](https://git-scm.com/)
+2. **pyenv-win** -- install via the [pyenv-win instructions](https://github.com/pyenv-win/pyenv-win#installation) and then run:
 ```shell
-cmd /c winget install -e --id Git.Git
-```
-2. On your keyboard: press **`WINDOWS + E`** to open File Explorer, then navigate to the folder where you want to install the launcher. Once in the desired folder, type `cmd` into the address bar and press enter. Then, run the following command:
-```shell
-git clone https://github.com/SillyTavern/SillyTavern-Launcher.git && cd SillyTavern-Launcher && start installer.bat
+pyenv install 3.12.10
+pyenv global 3.12.10
 ```
 
-## 🐧 Linux
-1. Open your favorite terminal and install git
-2. Git clone the Sillytavern-Launcher with: 
+# 🔧 Installation (Windows)
+
+1. Open File Explorer, navigate to the folder where you want to install the launcher, type `cmd` in the address bar, and run:
 ```shell
-git clone https://github.com/SillyTavern/SillyTavern-Launcher.git && cd SillyTavern-Launcher
+git clone https://github.com/jcd315/SillyTavern-Launcher-Pyenv.git && cd SillyTavern-Launcher-Pyenv && start installer_pyenv.bat
 ```
-3. Start the installer.sh with: 
+2. After installation, launch with:
 ```shell
-chmod +x install.sh && ./install.sh
-```
-4. After installation start the launcher.sh with: 
-```shell
-chmod +x launcher.sh && ./launcher.sh
+Launcher_pyenv.bat
 ```
 
-## 🍎 Mac
-1. Open a terminal and install brew with: 
-```shell
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-2. Install git with: 
-```shell
-brew install git
-```
-3. Git clone the Sillytavern-Launcher with: 
-```shell
-git clone https://github.com/SillyTavern/SillyTavern-Launcher.git && cd SillyTavern-Launcher
-```
-4. Start the installer.sh with: 
-```shell
-chmod +x install.sh && ./install.sh
-```
-5. After installation start the launcher.sh with: 
-```shell
-chmod +x launcher.sh && ./launcher.sh
-```
+> **Note:** The standard `installer.bat` and `Launcher.bat` (Conda-based) are still included from upstream if you prefer to use those instead.
 
 # ✨ Features
 ## **Core Utilities**
@@ -131,20 +114,22 @@ Manage voice synthesis and processing tools.
 - **Custom Settings:** Configure custom shortcuts and modules (`settings/` directory).
 
 
+# Keeping up with upstream
+
+This fork is periodically synced with the upstream [SillyTavern-Launcher](https://github.com/SillyTavern/SillyTavern-Launcher). If you want to pull the latest upstream changes yourself:
+
+```shell
+git remote add upstream https://github.com/SillyTavern/SillyTavern-Launcher.git
+git fetch upstream
+git merge upstream/main
+```
+
 # Questions or suggestions?
 
-| [![][discord-shield-badge]][discord-link] | [Join our Discord community!](https://discord.gg/sillytavern) Get support, share characters and prompts. |
-| :---------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| [![][discord-shield-badge]][discord-link] | [Join the SillyTavern Discord community!](https://discord.gg/sillytavern) Get support, share characters and prompts. |
+| :---------------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
 
-# Screenshots
-## Windows
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/ac9edfe4-b5a7-4d7f-a21c-acd702b3d2fe">
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/8830d523-87e1-4e0a-8fb0-75d8a48d763f">
-
-## Linux
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/e1db688d-7cb0-4fbc-825c-3560ca4b901d">
-<img width="400" alt="image" src="https://github.com/user-attachments/assets/180b9fbb-e4b4-4992-bb0c-72386f30a513">
-
+For issues specific to the pyenv fork, please [open an issue here](https://github.com/jcd315/SillyTavern-Launcher-Pyenv/issues).
 
 <div align="right">
 

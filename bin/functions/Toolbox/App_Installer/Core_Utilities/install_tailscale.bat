@@ -1,5 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
+if not defined STL_LAUNCHER set "STL_LAUNCHER=Launcher.bat"
 
 :install_tailscale
 title STL [INSTALL-TAILSCALE]
@@ -19,7 +20,7 @@ if /i "%tailscale_account%"=="Y" (
         echo Press any key to restart the launcher
         echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% %green_fg_strong%Restarting launcher...%reset%
         timeout /t 10
-        start %stl_root%/launcher.bat
+        start %stl_root%%STL_LAUNCHER%
         exit
     ) else (
         echo %blue_bg%[%time%]%reset% %blue_fg_strong%[ERROR]%reset% %red_fg_strong%Tailscale installation failed.%reset%
@@ -35,12 +36,12 @@ if /i "%tailscale_account%"=="Y" (
 
     if %errorlevel%==0 (
         echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% %green_fg_strong%Tailscale installed successfully.%reset%
-        echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Restart the launcher, your Tailscale Remote SillyTavern URLS should appear on the home menu.  
+        echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% Restart the launcher, your Tailscale Remote SillyTavern URLS should appear on the home menu.
         echo If they don't appear, go to Toolbox / Editor / Core Utilities / View Tailscale Configuration.
         echo Press any key to restart the launcher
         echo %blue_bg%[%time%]%reset% %blue_fg_strong%[INFO]%reset% %green_fg_strong%Restarting launcher...%reset%
         timeout /t 10
-        start %stl_root%/launcher.bat
+        start %stl_root%%STL_LAUNCHER%
         exit
     ) else (
         echo %blue_bg%[%time%]%reset% %blue_fg_strong%[ERROR]%reset% %red_fg_strong%Tailscale installation failed.%reset%
